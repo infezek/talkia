@@ -25,7 +25,7 @@ DELETE FROM bots
 WHERE id = ?;
 
 -- name: FindBotsByUserID :many
-SELECT * FROM bots WHERE user_id = ?;
+SELECT b.*, (SELECT COUNT(*) FROM user_like_bot ulb WHERE ulb.bot_id = b.id) as likes FROM bots b WHERE b.user_id = ?;
 
 -- name: FindBotsByName :many
 SELECT b.*, (SELECT COUNT(*) FROM user_like_bot ulb WHERE ulb.bot_id = b.id) as likes FROM bots b WHERE name LIKE ? ORDER BY likes DESC LIMIT ? OFFSET ?;
