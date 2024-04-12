@@ -218,6 +218,7 @@ func (ru *RepositoryUsers) FindLikeBotByUserID(userID uuid.UUID) ([]entity.Bot, 
 			Personality:   repo.Personality,
 			Location:      repo.Location,
 			Published:     repo.Published,
+			CategoryID:    uuid.MustParse(repo.CategoryID),
 			Active:        repo.Active,
 			CreatedAt:     repo.CreatedAt,
 			UpdatedAt:     repo.UpdatedAt,
@@ -304,7 +305,6 @@ func (ru *RepositoryUsers) ListMyBots(pagination entity.Pagination, userID uuid.
 		bots = append(bots, entity.Bot{
 			ID:            id,
 			UserID:        userID,
-			Like:          repo.Likes,
 			Name:          repo.Name,
 			CategoryID:    categoryUUID,
 			Description:   repo.Description,
@@ -314,6 +314,7 @@ func (ru *RepositoryUsers) ListMyBots(pagination entity.Pagination, userID uuid.
 			Location:      repo.Location,
 			Published:     repo.Published,
 			Active:        repo.Active,
+			Like:          repo.Likes,
 			CreatedAt:     repo.CreatedAt,
 			UpdatedAt:     repo.UpdatedAt,
 		})
