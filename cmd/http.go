@@ -25,7 +25,6 @@ import (
 	"github.com/infezek/app-chat/pkg/repository/repository_user"
 	"github.com/infezek/app-chat/pkg/utils/middleware"
 	"github.com/infezek/app-chat/pkg/utils/util_url"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -44,10 +43,7 @@ func http(cfg *config.Config) *cobra.Command {
 				AppName: cfg.NewRelicAppName,
 				Enabled: cfg.NewRelicEnabled,
 			}
-			nr, err := newrelic.NewApplication(
-				newrelic.ConfigAppName(configNewRelic.AppName),
-				newrelic.ConfigLicense(configNewRelic.License),
-			)
+
 			if err != nil {
 				log.Fatalf("Erro ao inicializar o New Relic: %v", err)
 			}
@@ -71,14 +67,9 @@ func http(cfg *config.Config) *cobra.Command {
 			adapterImage := adapter.NewImage(cfg)
 			adapterToken := adapter.NewToken(cfg)
 
-			l := logrus.NewEntry(logrus.New())
-			adapterLogger, err := adapter.NewLogger(l, nr)
-			if err != nil {
-				fmt.Println("error ao criar logger", err.Error())
-			}
 			middleware := middleware.NewMiddlewareHandler(repoUser, adapterToken)
 			controller_categories.Http(app, repoCategory, cfg)
-			controller_users.Http(app, cfg, repoUser, adapterToken, adapterImage, adapterLogger, middleware)
+			controller_users.Http(app, cfg, repoUser, adapterToken, adapterImage, middleware)
 			controller_bots.Http(app, repoBot, repoCategory, adapterToken, adapterImage, cfg, middleware)
 			controller_chats.Http(app, repoChat, repoUser, repoBot, adapterToken, cfg)
 			controller_bots.WebSocket(app, adapterToken)
