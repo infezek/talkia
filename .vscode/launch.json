@@ -1,0 +1,33 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "HTTP",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd",
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "CHAT_ENVIRONMENT": "debug"
+            },
+            "args": [
+                "http"
+            ]
+        },
+        {
+            "name": "Telegram",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd",
+            "envFile": "${workspaceFolder}/.env",
+            "env": {
+                "CHAT_ENVIRONMENT": "debug"
+            },
+            "args": [
+                "telegram"
+            ]
+        }
+    ]
+}
