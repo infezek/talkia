@@ -8,7 +8,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
-	"github.com/infezek/app-chat/db/migrate"
 	"github.com/infezek/app-chat/pkg/adapter"
 	"github.com/infezek/app-chat/pkg/config"
 	"github.com/infezek/app-chat/pkg/controller/controller_bots"
@@ -53,7 +52,7 @@ func http(cfg *config.Config) *cobra.Command {
 			}))
 
 			app.Get(util_url.New("/metrics"), monitor.New(monitor.Config{Title: "MyService Metrics Page"}))
-			migrate.Run(cfg)
+			// migrate.Run(cfg)
 			db, err := database.New(cfg)
 			if err != nil {
 				panic(err)
