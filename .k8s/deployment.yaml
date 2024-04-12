@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: talkia
-        image: infectiionz/tel-ia:v52
+        image: infectiionz/tel-ia:v54
         ports:
         - containerPort: 80
         envFrom:
