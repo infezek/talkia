@@ -118,18 +118,35 @@ func (q *Queries) FindBotsByName(ctx context.Context, arg FindBotsByNameParams) 
 }
 
 const findBotsByUserID = `-- name: FindBotsByUserID :many
-SELECT id, user_id, category_id, name, personality, description, avatar_url, background_url, location, published, active, created_at, updated_at FROM bots WHERE user_id = ?
+SELECT b.id, b.user_id, b.category_id, b.name, b.personality, b.description, b.avatar_url, b.background_url, b.location, b.published, b.active, b.created_at, b.updated_at, (SELECT COUNT(*) FROM user_like_bot ulb WHERE ulb.bot_id = b.id) as likes FROM bots b WHERE b.user_id = ?
 `
 
-func (q *Queries) FindBotsByUserID(ctx context.Context, userID string) ([]Bot, error) {
+type FindBotsByUserIDRow struct {
+	ID            string
+	UserID        string
+	CategoryID    string
+	Name          string
+	Personality   string
+	Description   string
+	AvatarUrl     string
+	BackgroundUrl string
+	Location      string
+	Published     bool
+	Active        bool
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Likes         int64
+}
+
+func (q *Queries) FindBotsByUserID(ctx context.Context, userID string) ([]FindBotsByUserIDRow, error) {
 	rows, err := q.db.QueryContext(ctx, findBotsByUserID, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Bot
+	var items []FindBotsByUserIDRow
 	for rows.Next() {
-		var i Bot
+		var i FindBotsByUserIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -144,6 +161,7 @@ func (q *Queries) FindBotsByUserID(ctx context.Context, userID string) ([]Bot, e
 			&i.Active,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Likes,
 		); err != nil {
 			return nil, err
 		}
