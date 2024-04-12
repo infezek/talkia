@@ -22,7 +22,6 @@ func Http(app *fiber.App,
 	repoUser repository.RepositoryUser,
 	adapterToken adapter.AdapterToken,
 	adapterImage adapter.AdapterImagem,
-	logger adapter.AdapterLogger,
 	middlerwareHandler middleware.MiddlewareHandlerInterface,
 ) {
 	app.Post(util_url.New("/users"), func(c *fiber.Ctx) error {
@@ -59,15 +58,12 @@ func Http(app *fiber.App,
 	})
 	jwt := middleware.NewAuthMiddleware(cfg.OpenIAToken)
 	app.Post(util_url.New("/users/categories"), jwt, middlerwareHandler.FindUser(), func(c *fiber.Ctx) error {
-		logger.Info("users/categories")
 		bearer := c.Get("Authorization")
 		paramsUser, err := adapterToken.DecodeToken(bearer)
 		if err != nil {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": err.Error()})
 		}
-		logger.AddParam("user_id", paramsUser.UserID)
-		logger.AddParam("email", paramsUser.Email)
-		logger.Info("params user")
+
 		var param []string
 		if err := c.BodyParser(&param); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
