@@ -2,7 +2,6 @@ package test
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/infezek/app-chat/pkg/config"
 )
@@ -29,18 +28,14 @@ func NewDatabaseTest(db *sql.DB, cfg *config.Config) *DatabaseTest {
 	}
 }
 
-func (d *DatabaseTest) Delete() {
-	result, err := d.DB.Exec(fmt.Sprintf("DROP DATABASE IF EXISTS %s", d.Cfg.DBName))
-	if err != nil {
-		fmt.Println("err:", err.Error())
-	}
-	fmt.Println(result)
-}
-
-func (d *DatabaseTest) Create() {
-	result, err := d.DB.Exec(fmt.Sprintf("DROP DATABASE IF NOT EXISTS  %s", d.Cfg.DBName))
-	if err != nil {
-		fmt.Println("err:", err.Error())
-	}
-	fmt.Println(result)
+func (d *DatabaseTest) Trucate() {
+	d.DB.Exec("DELETE FROM user_like_bot")
+	d.DB.Exec("DELETE FROM users_categories")
+	d.DB.Exec("DELETE FROM preferences")
+	d.DB.Exec("DELETE FROM messages")
+	d.DB.Exec("DELETE FROM chats")
+	d.DB.Exec("DELETE FROM messages")
+	d.DB.Exec("DELETE FROM categories")
+	d.DB.Exec("DELETE FROM bots")
+	d.DB.Exec("DELETE FROM users")
 }
