@@ -1,0 +1,98 @@
+CREATE TABLE users (
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    username VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    avatar_url VARCHAR(255),
+    password VARCHAR(255) NOT NULL,
+    language ENUM('english', 'portuguese', 'spanish') NOT NULL,
+    platform ENUM('android', 'ios') NOT NULL,
+    gender ENUM('masculine', 'feminine', 'neutral') DEFAULT NULL,
+    location VARCHAR(255)  NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE bots (
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    category_id VARCHAR(36) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    personality VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    avatar_url VARCHAR(255) NOT NULL,
+    background_url VARCHAR(255) NOT NULL,
+    location VARCHAR(255) NOT NULL,
+    published BOOLEAN NOT NULL DEFAULT FALSE,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+CREATE TABLE chats (
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    bot_id VARCHAR(36) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (bot_id) REFERENCES bots(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+CREATE TABLE messages (
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    chat_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    who ENUM('user', 'system') NOT NULL,
+    message TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (chat_id) REFERENCES chats(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+
+CREATE TABLE preferences (
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    chat_id VARCHAR(36) NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    preference_key VARCHAR(255) NOT NULL,
+    preference_value TEXT NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (chat_id) REFERENCES chats(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE categories (
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    name VARCHAR(36) NOT NULL,
+    active BOOLEAN NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE users_categories(
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    category_id VARCHAR(36) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (category_id) REFERENCES categories(id)
+);
+
+CREATE TABLE user_like_bot(
+    id VARCHAR(36) PRIMARY KEY NOT NULL,
+    user_id VARCHAR(36) NOT NULL,
+    bot_id VARCHAR(36) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (bot_id) REFERENCES bots(id)
+);
+
