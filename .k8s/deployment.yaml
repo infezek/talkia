@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: talkia-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: talkia
+  template:
+    metadata:
+      labels:
+        app: talkia
+    spec:
+      containers:
+      - name: talkia
+        image: infectiionz/tel-ia:v52
+        ports:
+        - containerPort: 80
+        envFrom:
+        - secretRef:
+            name: talkia-secrets
+
+        livenessProbe:
+          httpGet:
+            path: /talkia
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /talkia
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: talkia
+  name: talkia-service
+spec:
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: talkia
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: talkia-ingress
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /talkia
+            pathType: Prefix
+            backend:
+              service:
+                name: talkia-service
+                port:
+                  number: 80
