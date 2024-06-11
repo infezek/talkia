@@ -1,0 +1,29 @@
+settings:
+  legacy:
+    force: false
+    interval: 0s
+build:
+  status: false
+  args:
+    - -mod=vendor
+schema:
+  - name: app-chat
+    path: ./cmd
+    args:
+      - http
+    commands:
+      install:
+        status: false
+        method: go install .
+      run:
+        status: true
+    watcher:
+      extensions:
+        - go
+        - yml
+      paths:
+        - ./..
+      ignored_paths:
+        - .git
+        - .realize
+        - vendor
