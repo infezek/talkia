@@ -45,15 +45,22 @@ func Http(app *fiber.App,
 			return err
 		}
 		usecaseLogin := usecase_user.NewLoginUseCase(cfg, repoUser, adapterToken)
-		token, err := usecaseLogin.Execute(params.Email)
+		userToken, err := usecaseLogin.Execute(params.Email)
 		if err != nil {
 			return err
 		}
 		return c.JSON(fiber.Map{
-			"token":      token,
+			"id":         out.ID,
+			"token":      userToken.Token,
 			"username":   out.Username,
 			"avatar_url": out.AvatarURL,
 			"bucket_url": cfg.BucketImagesURL,
+			"email":      out.Email,
+			"platform":   out.Platform,
+			"gender":     out.Gender,
+			"location":   out.Location,
+			"language":   out.Language,
+			"created_at": out.CreatedAt,
 		})
 	})
 	jwt := middleware.NewAuthMiddleware(cfg.OpenIAToken)
@@ -110,14 +117,15 @@ func Http(app *fiber.App,
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
 		}
 		usecase := usecase_user.UpdateUseCase(cfg, repoUser)
-		if err := usecase.Execute(usecase_user.UpdateUserDtoInput{
+		user, err := usecase.Execute(usecase_user.UpdateUserDtoInput{
 			UserID:   paramsUser.UserID,
 			Username: params.Username,
 			Language: params.Language,
-		}); err != nil {
+		})
+		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
-		return c.Status(http.StatusCreated).Send(nil)
+		return c.Status(http.StatusOK).JSON(user)
 	})
 
 	app.Post(util_url.New("/login"), func(c *fiber.Ctx) error {
@@ -129,11 +137,23 @@ func Http(app *fiber.App,
 			return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{"error": err.Error()})
 		}
 		usecase := usecase_user.NewLoginUseCase(cfg, repoUser, adapterToken)
-		token, err := usecase.Execute(params.Email)
+		userToken, err := usecase.Execute(params.Email)
 		if err != nil {
 			return err
 		}
-		return c.JSON(fiber.Map{"token": token})
+		return c.JSON(fiber.Map{
+			"id":         userToken.ID,
+			"token":      userToken.Token,
+			"username":   userToken.Username,
+			"avatar_url": userToken.AvatarURL,
+			"bucket_url": cfg.BucketImagesURL,
+			"email":      userToken.Email,
+			"platform":   userToken.Platform,
+			"gender":     userToken.Gender,
+			"location":   userToken.Location,
+			"language":   userToken.Language,
+			"created_at": userToken.CreatedAt,
+		})
 	})
 
 	app.Put(util_url.New("/users/image"), jwt, middlerwareHandler.FindUser(), func(c *fiber.Ctx) error {
@@ -148,13 +168,14 @@ func Http(app *fiber.App,
 		if err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
 		}
-		if err := usecase.Execute(usecase_user.UploadImageDtoInput{
+		out, err := usecase.Execute(usecase_user.UploadImageDtoInput{
 			UserID: paramsUser.UserID,
 			Avatar: file,
-		}); err != nil {
+		})
+		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 		}
-		return c.Status(http.StatusOK).JSON(map[string]string{"message": "Image uploaded successfully!"})
+		return c.Status(http.StatusOK).JSON(map[string]string{"avatar_url": out.AvatarURL})
 	})
 
 	app.Get(util_url.New("/users/bots"), jwt, middlerwareHandler.FindUser(), func(c *fiber.Ctx) error {

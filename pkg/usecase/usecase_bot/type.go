@@ -33,20 +33,19 @@ type CreateDtoInput struct {
 }
 
 type UpdateDtoInput struct {
-	ID            string
-	UserID        string
-	Name          string
-	Personality   string
-	Description   string
-	AvatarURL     string
-	BackgroundURL string
-	Language      string
-	Location      string
+	ID          string
+	UserID      string
+	Name        string
+	CategoryID  string
+	Personality string
+	Description string
+	Location    string
 }
 
 type CreateDtoOutput struct {
 	ID          string    `json:"id"`
 	Name        string    `json:"name"`
+	Active      bool      `json:"active"`
 	CategoryID  string    `json:"category_id"`
 	Personality string    `json:"personality"`
 	Description string    `json:"description"`

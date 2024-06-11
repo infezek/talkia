@@ -34,6 +34,55 @@ func (ru *RepositoryUsers) Create(user entity.User) error {
 		Language: repositoryDB.UsersLanguage(user.Language),
 	})
 }
+func (ru *RepositoryUsers) List(pagination entity.Pagination) ([]entity.User, int64, error) {
+	repos, err := ru.repo.List(context.Background(), repositoryDB.ListParams{
+		Limit:  pagination.PerPage,
+		Offset: pagination.Offset,
+	})
+	if err != nil {
+		return []entity.User{}, 0, err
+	}
+	users := []entity.User{}
+	for _, repo := range repos {
+		id, err := uuid.Parse(repo.ID)
+		if err != nil {
+			return []entity.User{}, 0, err
+		}
+		categories, err := findCategoriesByUserID(ru.repo, id)
+		if err != nil {
+			return []entity.User{}, 0, err
+		}
+		chats, err := findChatsByUserID(ru.repo, id)
+		if err != nil {
+			return []entity.User{}, 0, err
+		}
+		bots, err := findBotsByUserID(ru.repo, id)
+		if err != nil {
+			return []entity.User{}, 0, err
+		}
+
+		users = append(users, entity.User{
+			ID:         id,
+			Username:   repo.Username,
+			Email:      repo.Email,
+			Password:   repo.Password,
+			Platform:   entity.Platform(repo.Platform),
+			Language:   entity.Language(repo.Language),
+			Location:   repo.Location,
+			Gender:     &entity.GenderFeminine,
+			AvatarURL:  repo.AvatarUrl.String,
+			Categories: categories,
+			Chats:      chats,
+			Bots:       bots,
+			CreatedAt:  repo.CreatedAt,
+		})
+	}
+	total, err := ru.repo.ListCount(context.Background())
+	if err != nil {
+		return []entity.User{}, 0, err
+	}
+	return users, total, nil
+}
 
 func (ru *RepositoryUsers) Update(user entity.User) error {
 	return ru.repo.UpdateUser(context.Background(), repositoryDB.UpdateUserParams{

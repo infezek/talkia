@@ -52,12 +52,14 @@ func NewBot(id, userID, categoryID uuid.UUID, name, personality, description, av
 	}
 }
 
-func (b *Bot) Update(name, personality, description, avatarURL, BackgroundURL string, location string) {
+func (b *Bot) Update(categoryID, name, personality, description string, location string, active bool) {
 	b.Name = name
 	b.Personality = personality
 	b.Description = description
-	b.AvatarURL = avatarURL
 	b.Location = location
+	categoryUUID, _ := uuid.Parse(categoryID)
+	b.CategoryID = categoryUUID
+	b.Active = active
 	b.UpdatedAt = time.Now()
 }
 

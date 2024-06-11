@@ -17,7 +17,7 @@ func ConfigTest() *config.Config {
 		DBPort:     "3306",
 		DBUser:     "root",
 		DBPassword: "123",
-		DBName:     "app_chat_test",
+		DBName:     "app-chat",
 	}
 }
 

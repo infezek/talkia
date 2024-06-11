@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/infezek/app-chat/pkg/config"
 	"github.com/infezek/app-chat/pkg/domain/adapter"
+	"github.com/infezek/app-chat/pkg/domain/domain_error"
 	"github.com/infezek/app-chat/pkg/domain/repository"
 )
 
@@ -25,28 +26,18 @@ func NewUploadImage(cfg *config.Config, repoUser repository.RepositoryUser, adap
 	}
 }
 
-type UploadImageDtoInput struct {
-	UserID string
-	Avatar File
-}
-
-type File struct {
-	File []byte
-	Name string
-}
-
-func (b *UploadImage) Execute(params UploadImageDtoInput) error {
+func (b *UploadImage) Execute(params UploadImageDtoInput) (UploadImageOutput, error) {
 	userID, err := uuid.Parse(params.UserID)
 	if err != nil {
-		return err
+		return UploadImageOutput{}, domain_error.BadRequest("invalid user id")
 	}
 	user, err := b.RepoUser.FindByID(userID)
 	if err != nil {
-		return err
+		return UploadImageOutput{}, domain_error.NotFound("user not found")
 	}
 	id, err := uuid.NewV7()
 	if err != nil {
-		return err
+		return UploadImageOutput{}, domain_error.BadRequest("error to generate id")
 	}
 	extensao := strings.Split(params.Avatar.Name, ".")
 	nameFile := fmt.Sprintf("%s.%s", id.String(), extensao[len(extensao)-1])
@@ -63,11 +54,13 @@ func (b *UploadImage) Execute(params UploadImageDtoInput) error {
 		}
 	}
 	if len(errors) > 0 {
-		return fmt.Errorf("%s", strings.Join(errors, ","))
+		return UploadImageOutput{}, domain_error.BadRequest(fmt.Sprintf("%s", strings.Join(errors, ",")))
 	}
 	user.UpdateAvatar(nameFile)
 	if err := b.RepoUser.UpdateAvatarURL(user); err != nil {
-		return err
+		return UploadImageOutput{}, domain_error.BadRequest("error to update avatar")
 	}
-	return nil
+	return UploadImageOutput{
+		AvatarURL: nameFile,
+	}, nil
 }

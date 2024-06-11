@@ -27,27 +27,32 @@ func NewUploadImage(repoBot repository.RepositoryBot, adapter adapter.AdapterIma
 	}
 }
 
-func (b *UploadImage) Execute(params UploadImageDtoInput) error {
+type UploadImageDtoOutput struct {
+	Avatar     string `json:"avatar"`
+	Background string `json:"background"`
+}
+
+func (b *UploadImage) Execute(params UploadImageDtoInput) (UploadImageDtoOutput, error) {
 	logrus.Infof("[UploadImage] started")
 	defer logrus.Infof("[UploadImage] finished")
 	botID, err := uuid.Parse(params.BotID)
 	if err != nil {
 		logrus.Infof("[UploadImage] 1 %s", err.Error())
-		return err
+		return UploadImageDtoOutput{}, err
 	}
 	bot, err := b.RepoBot.FindByID(botID)
 	if err != nil {
 		logrus.Infof("[UploadImage] 2 %s", err.Error())
-		return domain_error.NotFound("not found bot")
+		return UploadImageDtoOutput{}, domain_error.NotFound("not found bot")
 	}
 	userUUID, err := uuid.Parse(params.UserID)
 	if err != nil {
 		logrus.Infof("[UploadImage] 3 %s", err.Error())
-		return err
+		return UploadImageDtoOutput{}, err
 	}
 	if bot.UserID != userUUID {
 		logrus.Infof("[UploadImage] 4 %s", userUUID.String())
-		return fmt.Errorf("user not authorized")
+		return UploadImageDtoOutput{}, fmt.Errorf("user not authorized")
 	}
 	wg := new(sync.WaitGroup)
 	ch := make(chan error, 2)
@@ -58,7 +63,7 @@ func (b *UploadImage) Execute(params UploadImageDtoInput) error {
 			wg.Add(1)
 			id, err := uuid.NewV7()
 			if err != nil {
-				return err
+				return UploadImageDtoOutput{}, err
 			}
 			extensao := strings.Split(file.Name, ".")
 			nameFile := fmt.Sprintf("%s.%s", id.String(), extensao[len(extensao)-1])
@@ -77,28 +82,31 @@ func (b *UploadImage) Execute(params UploadImageDtoInput) error {
 	}
 	if len(errors) > 0 {
 		logrus.Infof("[UploadImage] 7 %s", strings.Join(errors, ","))
-		return fmt.Errorf("%s", strings.Join(errors, ","))
+		return UploadImageDtoOutput{}, fmt.Errorf("%s", strings.Join(errors, ","))
 	}
 	for _, file := range params.Files {
 		if file.Type == TypeImageAvatar {
 			id, ok := ImageUUID[file.Type]
 			if !ok {
 				logrus.Infof("[UploadImage] 8")
-				return fmt.Errorf("avatar image not found")
+				return UploadImageDtoOutput{}, fmt.Errorf("avatar image not found")
 			}
 			bot.UpdateAvatarURL(id)
 		} else if file.Type == TypeImageBackground {
 			id, ok := ImageUUID[file.Type]
 			if !ok {
 				logrus.Infof("[UploadImage] 9")
-				return fmt.Errorf("background image not found")
+				return UploadImageDtoOutput{}, fmt.Errorf("background image not found")
 			}
 			bot.UpdateBackgroundURL(id)
 		}
 	}
 	if err := b.RepoBot.Update(bot); err != nil {
 		logrus.Infof("[UploadImage] 10 %s", err.Error())
-		return err
+		return UploadImageDtoOutput{}, err
 	}
-	return nil
+	return UploadImageDtoOutput{
+		Avatar:     ImageUUID[TypeImageAvatar],
+		Background: ImageUUID[TypeImageBackground],
+	}, nil
 }

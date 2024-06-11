@@ -13,8 +13,8 @@ type Update struct {
 	Cfg     *config.Config
 }
 
-func NewUpdate(repoBot repository.RepositoryBot, cfg *config.Config) *Create {
-	return &Create{
+func NewUpdate(repoBot repository.RepositoryBot, cfg *config.Config) *Update {
+	return &Update{
 		RepoBot: repoBot,
 		Cfg:     cfg,
 	}
@@ -40,12 +40,12 @@ func (u *Update) Execute(params UpdateDtoInput) (UpdateDtoOutput, error) {
 		return UpdateDtoOutput{}, fmt.Errorf("cannot update published bot")
 	}
 	bot.Update(
+		params.CategoryID,
 		params.Name,
 		params.Personality,
 		params.Description,
-		params.AvatarURL,
-		params.BackgroundURL,
 		params.Location,
+		bot.Active,
 	)
 	if err := u.RepoBot.Update(bot); err != nil {
 		return UpdateDtoOutput{}, err
@@ -53,6 +53,8 @@ func (u *Update) Execute(params UpdateDtoInput) (UpdateDtoOutput, error) {
 	return UpdateDtoOutput{
 		ID:          bot.ID.String(),
 		Name:        bot.Name,
+		Active:      bot.Active,
+		CategoryID:  bot.CategoryID.String(),
 		Personality: bot.Personality,
 		Description: bot.Description,
 		Location:    bot.Location,

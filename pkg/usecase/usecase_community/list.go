@@ -47,16 +47,20 @@ func (l *ListComunity) Execute(userID string) (entity.Community, error) {
 	var categoryOfUser []entity.Category
 	var categoryNotUser []entity.Category
 	for _, category := range categories {
+		userNotCategory := true
 		if len(category.Bots) == 0 {
 			continue
 		}
 		for _, categoryByUser := range categoriesByUser {
 			if category.ID.String() == categoryByUser.ID.String() {
 				categoryOfUser = append(categoryOfUser, category)
+				userNotCategory = false
 				break
 			}
 		}
-		categoryNotUser = append(categoryNotUser, category)
+		if userNotCategory {
+			categoryNotUser = append(categoryNotUser, category)
+		}
 	}
 	result := append(categoryOfUser, categoryNotUser...)
 	return entity.Community{

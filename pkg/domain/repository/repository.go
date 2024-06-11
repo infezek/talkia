@@ -10,6 +10,7 @@ import (
 type RepositoryUser interface {
 	Create(user entity.User) error
 	Update(user entity.User) error
+	List(pagination entity.Pagination) ([]entity.User, int64, error)
 	Desactive(id uuid.UUID) error
 	CreateChat(chat entity.Chat) error
 	ListMyBots(pagination entity.Pagination, userID uuid.UUID) ([]entity.Bot, int64, error)

@@ -44,12 +44,14 @@ func (u *UseCase) SendMessage(chatID, userID string, text string) (string, error
 	close(messageCh)
 	var messageSendMessage entity.Message
 	var messageProcessPreferences entity.Message
+	var result []string
 	for response := range messageCh {
 		if response.Error != nil {
 			return "", response.Error
 		}
 		if response.Type == gateway.TypeSendMessage {
 			messageSendMessage = response.Message
+			result = append(result, response.Message.Message)
 		}
 		if response.Type == gateway.TypeProcessPreferences {
 			messageProcessPreferences = response.Message

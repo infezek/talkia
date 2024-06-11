@@ -6,7 +6,6 @@ import (
 
 	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
-	"github.com/infezek/app-chat/db/migrate"
 	"github.com/infezek/app-chat/pkg/config"
 	"github.com/infezek/app-chat/pkg/database"
 	"github.com/infezek/app-chat/pkg/domain/adapter"
@@ -35,7 +34,6 @@ func WebSocket(app *fiber.App, adapterToken adapter.AdapterToken) {
 	if err != nil {
 		panic(err)
 	}
-	migrate.Run(cfg)
 	db, err := database.New(cfg)
 	if err != nil {
 		panic(err)
@@ -79,6 +77,7 @@ func WebSocket(app *fiber.App, adapterToken adapter.AdapterToken) {
 				}
 				continue
 			}
+
 			b, err := json.Marshal(Response{Message: message})
 			if err != nil {
 				log.Errorf("error marshaling message, %s", err)
@@ -87,6 +86,7 @@ func WebSocket(app *fiber.App, adapterToken adapter.AdapterToken) {
 			if err = c.WriteMessage(mt, b); err != nil {
 				log.Errorf("error writing message: %s", err)
 			}
+
 		}
 	}))
 }

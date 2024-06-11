@@ -42,6 +42,8 @@ func (r *RepositoryBots) Update(bot entity.Bot) error {
 		BackgroundUrl: bot.BackgroundURL,
 		AvatarUrl:     bot.AvatarURL,
 		Location:      bot.Location,
+		Active:        bot.Active,
+		CategoryID:    bot.CategoryID.String(),
 	})
 }
 func (r *RepositoryBots) Desactive(id uuid.UUID) error {

@@ -24,7 +24,7 @@ func (t *AdapterToken) CreateToken(userID, email string) (string, error) {
 	claims := jwt.MapClaims{
 		"email":   email,
 		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 72).Unix(),
+		"exp":     time.Now().Add(time.Hour * 336).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	signed, err := token.SignedString([]byte(t.Cfg.OpenIAToken))
