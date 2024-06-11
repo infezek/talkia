@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/infezek/app-chat/pkg/adapter"
@@ -14,8 +15,10 @@ import (
 	"github.com/infezek/app-chat/pkg/controller/controller_categories"
 	"github.com/infezek/app-chat/pkg/controller/controller_chats"
 	"github.com/infezek/app-chat/pkg/controller/controller_community"
+	"github.com/infezek/app-chat/pkg/controller/controller_home"
 	"github.com/infezek/app-chat/pkg/controller/controller_users"
 	"github.com/infezek/app-chat/pkg/database"
+	"github.com/infezek/app-chat/pkg/gateway"
 	"github.com/infezek/app-chat/pkg/process_error"
 	"github.com/infezek/app-chat/pkg/repository/repository_bot"
 	"github.com/infezek/app-chat/pkg/repository/repository_category"
@@ -37,6 +40,13 @@ func http(cfg *config.Config) *cobra.Command {
 			app := fiber.New(fiber.Config{
 				ErrorHandler: process_error.Handler,
 			})
+
+			app.Use(cors.New(cors.Config{
+				AllowOrigins: "*",                                           // Ajuste para as origens que você deseja permitir
+				AllowHeaders: "Origin, Content-Type, Accept, Authorization", // Inclua aqui todos os cabeçalhos que precisam ser aceitos
+				AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH",              // Ajuste conforme os métodos que sua API permite
+			}))
+
 			configNewRelic := Config{
 				License: cfg.NewRelicLicense,
 				AppName: cfg.NewRelicAppName,
@@ -65,18 +75,16 @@ func http(cfg *config.Config) *cobra.Command {
 			repoCommunity := repository_community.New(db)
 			adapterImage := adapter.NewImage(cfg)
 			adapterToken := adapter.NewToken(cfg)
+			gateway := gateway.NewGatewayBot(cfg)
 
 			middleware := middleware.NewMiddlewareHandler(repoUser, adapterToken)
 			controller_categories.Http(app, repoCategory, cfg)
 			controller_users.Http(app, cfg, repoUser, adapterToken, adapterImage, middleware)
-			controller_bots.Http(app, repoBot, repoCategory, adapterToken, adapterImage, cfg, middleware)
+			controller_bots.Http(app, repoBot, repoCategory, repoChat, repoUser, gateway, adapterToken, adapterImage, cfg, middleware)
 			controller_chats.Http(app, repoChat, repoUser, repoBot, adapterToken, cfg)
 			controller_bots.WebSocket(app, adapterToken)
 			controller_community.Http(app, cfg, repoCommunity, repoUser, adapterToken)
-
-			app.Get(util_url.New("/"), func(c *fiber.Ctx) error {
-				return c.JSON(map[string]string{"message": "ok"})
-			})
+			controller_home.Http(app)
 
 			port := os.Getenv("PORT")
 			if port == "" {
