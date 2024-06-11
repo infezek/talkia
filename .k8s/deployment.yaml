@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: talkia-deployment
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: talkia
@@ -14,13 +14,12 @@ spec:
     spec:
       containers:
       - name: talkia
-        image: infectiionz/tel-ia:v54
+        image: infectiionz/tel-ia:v82
         ports:
         - containerPort: 80
         envFrom:
         - secretRef:
             name: talkia-secrets
-
         livenessProbe:
           httpGet:
             path: /talkia

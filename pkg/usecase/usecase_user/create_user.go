@@ -44,6 +44,13 @@ func (u *UseCase) Execute(params CreateUserDtoInput) (CreateDto, error) {
 		return CreateDto{
 			Username:  user.Username,
 			AvatarURL: user.AvatarURL,
+			ID:        user.ID,
+			Email:     user.Email,
+			Platform:  user.Platform,
+			Gender:    user.Gender,
+			Location:  user.Location,
+			Language:  user.Language,
+			CreatedAt: user.CreatedAt,
 		}, nil
 
 	}
@@ -53,10 +60,24 @@ func (u *UseCase) Execute(params CreateUserDtoInput) (CreateDto, error) {
 	return CreateDto{
 		Username:  user.Username,
 		AvatarURL: user.AvatarURL,
+		ID:        user.ID,
+		Email:     user.Email,
+		Platform:  user.Platform,
+		Gender:    user.Gender,
+		Location:  user.Location,
+		Language:  user.Language,
+		CreatedAt: user.CreatedAt,
 	}, nil
 }
 
 type CreateDto struct {
-	Username  string
-	AvatarURL string
+	ID        uuid.UUID       `json:"id"`
+	Username  string          `json:"username"`
+	Email     string          `json:"email"`
+	Platform  entity.Platform `json:"platform"`
+	Gender    *entity.Gender  `json:"gender"`
+	AvatarURL string          `json:"avatar_url"`
+	Location  string          `json:"location"`
+	Language  entity.Language `json:"language"`
+	CreatedAt time.Time       `json:"created_at"`
 }

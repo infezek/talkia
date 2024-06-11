@@ -1,0 +1,5 @@
+base:
+  - deployment.yaml
+
+patches:
+  - ./dev/replicas-patch.yaml
