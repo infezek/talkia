@@ -230,6 +230,8 @@ description = ?,
 background_url = ?,
 avatar_url = ?, 
 location = ?,
+category_id = ?,
+active = ?,
 updated_at = NOW()
 WHERE id = ?
 `
@@ -241,6 +243,8 @@ type UpdateBotParams struct {
 	BackgroundUrl string
 	AvatarUrl     string
 	Location      string
+	CategoryID    string
+	Active        bool
 	ID            string
 }
 
@@ -252,6 +256,8 @@ func (q *Queries) UpdateBot(ctx context.Context, arg UpdateBotParams) error {
 		arg.BackgroundUrl,
 		arg.AvatarUrl,
 		arg.Location,
+		arg.CategoryID,
+		arg.Active,
 		arg.ID,
 	)
 	return err

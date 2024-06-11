@@ -17,6 +17,8 @@ description = ?,
 background_url = ?,
 avatar_url = ?, 
 location = ?,
+category_id = ?,
+active = ?,
 updated_at = NOW()
 WHERE id = ?;
 

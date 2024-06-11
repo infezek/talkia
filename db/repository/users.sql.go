@@ -352,6 +352,50 @@ func (q *Queries) LikeToBot(ctx context.Context, arg LikeToBotParams) error {
 	return err
 }
 
+const list = `-- name: List :many
+SELECT id, username, email, avatar_url, password, language, platform, gender, location, created_at, updated_at FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?
+`
+
+type ListParams struct {
+	Limit  int32
+	Offset int32
+}
+
+func (q *Queries) List(ctx context.Context, arg ListParams) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, list, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.Email,
+			&i.AvatarUrl,
+			&i.Password,
+			&i.Language,
+			&i.Platform,
+			&i.Gender,
+			&i.Location,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listBotsByUserID = `-- name: ListBotsByUserID :many
 SELECT b.id, b.user_id, b.category_id, b.name, b.personality, b.description, b.avatar_url, b.background_url, b.location, b.published, b.active, b.created_at, b.updated_at,
        (SELECT COUNT(*) FROM user_like_bot WHERE bot_id = b.id) AS likes
@@ -464,6 +508,17 @@ func (q *Queries) ListCategoriesByUserID(ctx context.Context, userID string) ([]
 		return nil, err
 	}
 	return items, nil
+}
+
+const listCount = `-- name: ListCount :one
+SELECT count(*) FROM users
+`
+
+func (q *Queries) ListCount(ctx context.Context) (int64, error) {
+	row := q.db.QueryRowContext(ctx, listCount)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
 }
 
 const publishBot = `-- name: PublishBot :exec

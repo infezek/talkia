@@ -6,6 +6,12 @@ VALUES (?, ?, ?, ?, ?, ?, ?, NOW());
 -- name: GetUserByID :one
 SELECT * FROM users WHERE id = ?;
 
+-- name: List :many
+SELECT * FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?;
+
+-- name: ListCount :one
+SELECT count(*) FROM users;
+
 -- name: UpdateUser :exec
 UPDATE users SET 
 username = ?,
